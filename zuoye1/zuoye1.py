@@ -51,8 +51,8 @@ def information_hide(picture, secret, result_filename):
     new_Source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]  # 创建新矩阵
     result_file.write("%d %d\n" % (new_width, new_height))
 
-    for i in range(0, new_width - 8, 8):
-        for j in range(0, new_height - 8, 8):
+    for i in range(0, new_width - 7, 8):
+        for j in range(0, new_height - 7, 8):
 
             # 对每个小块儿进行DCT变换和量化处理
             for v in range(8):
