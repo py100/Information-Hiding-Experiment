@@ -28,6 +28,8 @@ LHTable = [[16, 11, 10, 16, 24, 40, 51, 61],
 
 def information_hide(picture, secret, result_filename):
     im = Image.open(picture)
+    source = im.copy().load()  # 加载图片
+
     result_file = open(result_filename, "w")
 
     # 将密语的每个字符，变为8位的二进制ASCII码
@@ -43,19 +45,20 @@ def information_hide(picture, secret, result_filename):
 
     width = im.size[0]
     height = im.size[1]
-    source = im.copy().load()
     new_width = width - width % 8
     new_height = height - height % 8
 
-    new_Source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]
+    new_Source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]  # 创建新矩阵
     result_file.write("%d %d\n" % (new_width, new_height))
-    print(len(new_Source), len(new_Source[0]))
 
-    for i in range(8, new_width - 8, 8):
+    for i in range(0, new_width - 8, 8):
         for j in range(0, new_height - 8, 8):
 
+            # 对每个小块儿进行DCT变换和量化处理
             for v in range(8):
                 for u in range(8):
+
+                    # DCT变换
                     Cu = Cv = 1
                     if not v:
                         Cv = 2**(-0.5)
@@ -67,13 +70,18 @@ def information_hide(picture, secret, result_filename):
                             t += source[i + y, j + x] * cos((2 * x + 1) * u * pi / 16) * cos((2 * y + 1) * v * pi / 16)
                     t = 0.25 * Cu * Cv * t
 
+                    # 量化
                     t = round(t / LHTable[v][u])
+
+                    # 隐写
                     if not stop_flag:
                         if t not in {0, 1, -1}:
                             t = YinXie(t, Bsecret[secret_index])
                             secret_index += 1
                             if secret_index == secret_len:
                                 stop_flag = True
+
+                    # 计算之后的值放入新矩阵
                     new_Source[i + v][j + u] = t
 
     for i in range(new_height):
