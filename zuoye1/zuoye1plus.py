@@ -26,9 +26,19 @@ LHTable = [[16, 11, 10, 16, 24, 40, 51, 61],
            [72, 92, 95, 98, 112, 100, 103, 99], ]
 
 
+LHTable2 = [[17, 18, 24, 47, 99, 99, 99, 99],
+            [18, 21, 26, 66, 99, 99, 99, 99],
+            [24, 26, 56, 99, 99, 99, 99, 99],
+            [47, 66, 99, 99, 99, 99, 99, 99],
+            [99, 99, 99, 99, 99, 99, 99, 99],
+            [99, 99, 99, 99, 99, 99, 99, 99],
+            [99, 99, 99, 99, 99, 99, 99, 99],
+            [99, 99, 99, 99, 99, 99, 99, 99]]
+
+
 def information_hide(picture, secret, result_filename):
     im = Image.open(picture)
-    source = im.copy().load()  # 加载图片
+    # source = im.copy().load()  # 加载图片
 
     result_file = open(result_filename, "w")
 
@@ -48,7 +58,27 @@ def information_hide(picture, secret, result_filename):
     new_width = width - width % 8
     new_height = height - height % 8
 
-    new_Source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]  # 创建新矩阵
+    r, g, b = im.split()
+    r = r.load()
+    g = g.load()
+    b = b.load()
+
+    # 计算YCbCr
+    y_source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]
+    Cb_source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]
+    Cr_source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]
+    for i in range(new_width):
+        for j in range(new_height):
+            y_source[i][j] = round(r[i, j] * 0.299 + g[i, j] * 0.587 + b[i, j] * 0.114)
+            Cb_source[i][j] = round((b[i, j] - y_source[i][j]) / 1.772)
+            Cr_source[i][j] = round((r[i, j] - y_source[i][j]) / 1.402)
+            y_source[i][j] -= 128
+
+    # 创建新矩阵
+    y_new_Source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]
+    Cb_new_source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]
+    Cr_new_source = [[0 * x * i for x in range(new_height)] for i in range(new_width)]
+
     result_file.write("%d %d\n" % (new_width, new_height))
 
     for i in range(0, new_width - 7, 8):
@@ -58,36 +88,52 @@ def information_hide(picture, secret, result_filename):
             for v in range(8):
                 for u in range(8):
 
-                    # DCT变换
+                    # y值DCT变换
                     Cu = Cv = 1
                     if not v:
                         Cv = 2**(-0.5)
                     if not u:
                         Cu = 2**(-0.5)
-                    t = 0
+                    ty = 0
                     for y in range(8):
                         for x in range(8):
-                            t += source[i + y, j + x] * cos((2 * x + 1) * u * pi / 16) * cos((2 * y + 1) * v * pi / 16)
-                    t = 0.25 * Cu * Cv * t
+                            ty += y_source[i + y][j + x] * cos((2 * x + 1) * u * pi / 16) * cos((2 * y + 1) * v * pi / 16)
+                    ty = 0.25 * Cu * Cv * ty
 
                     # 量化
-                    t = round(t / LHTable[v][u])
+                    ty = round(ty / LHTable[v][u])
 
                     # 隐写
                     if not stop_flag:
-                        if t not in {0, 1, -1}:
-                            t = YinXie(t, Bsecret[secret_index])
+                        if ty not in {0, 1, -1}:
+                            ty = YinXie(ty, Bsecret[secret_index])
                             secret_index += 1
                             if secret_index == secret_len:
                                 stop_flag = True
 
                     # 计算之后的值放入新矩阵
-                    new_Source[i + v][j + u] = t
+                    y_new_Source[i + v][j + u] = ty
+
+                    # 对Cb,Cr值进行除隐写外其它操作
+                    tCb = 0
+                    for y in range(8):
+                        for x in range(8):
+                            tCb += Cb_source[i + y][j + x] * cos((2 * x + 1) * u * pi / 16) * cos((2 * y + 1) * v * pi / 16)
+                    tCb = 0.25 * Cu * Cv * tCb
+                    tCb = round(tCb / LHTable2[v][u])
+                    Cb_new_source[i + v][j + u] = tCb
+
+                    tCr = 0
+                    for y in range(8):
+                        for x in range(8):
+                            tCr += Cr_source[i + y][j + x] * cos((2 * x + 1) * u * pi / 16) * cos((2 * y + 1) * v * pi / 16)
+                    tCr = 0.25 * Cu * Cv * tCr
+                    tCr = round(tCr / LHTable2[v][u])
+                    Cr_new_source[i + v][j + u] = tCr
 
     for i in range(new_height):
         for j in range(new_width):
-            result_file.write("%d " % new_Source[j][i])
-        result_file.write("\n")
+            result_file.write("%d %d %d\n" % (y_new_Source[j][i], Cb_new_source[j][i], Cr_new_source[j][i]))
 
     result_file.close()
 
@@ -95,7 +141,7 @@ def information_hide(picture, secret, result_filename):
 if __name__ == "__main__":
     secret = "I love you!"
     if len(sys.argv) == 1:
-        picture = "small.bmp"
+        picture = "rgb.bmp"
         result_filename = "result.txt"
         information_hide(picture, secret, result_filename)
         # print("未指定信息载体图片。")
