@@ -1,125 +1,35 @@
-from PIL import Image
-import sys
-import random
+import os
+import matplotlib.pyplot as plt
 
 
-def Change(percent):
-    r = random.randrange(0, 100)
-    if r > percent:
-        return False
-    else:
-        return True
+percentRange = range(0, 101, 5)
+# 进行隐写，i是隐写率
+for i in percentRange:
+    os.system("python LSB.py -H -p huidu.bmp -s HideInfo.bmp -c %d" % i)
 
+# 进行RS分析并画图
+bili = 70
+Rm = []
+R_m = []
+Sm = []
+S_m = []
+percentRange2 = []
+files = os.listdir("out")
+for file in files:
+    percentRange2.append(int(file.strip()[3:-4]))
+percentRange2.sort()
+for i in percentRange2:
+    print("开始RS分析图片out%d.bmp" % i, end="\t\t", flush=True)
+    result = os.popen("python RS.py out\\out%d.bmp %d" % (i, bili)).read()
+    print("结束")
+    [r1, r2, r3, r4] = result.strip().split(" ")
+    Rm.append(float(r1))
+    R_m.append(float(r2))
+    Sm.append(float(r3))
+    S_m.append(float(r4))
 
-def YinXie(origin, info):
-    if origin % 2 == 0:
-        if info == 0:
-            return origin
-        elif info == 1:
-            return origin + 1
-    else:
-        if info == 1:
-            return origin
-        elif info == 0:
-            return origin - 1
-
-
-def F(bitList, ftype, percent):
-    if ftype == 0:
-        return bitList
-    elif ftype > 0:
-        newBitList = []
-        for i in bitList:
-            if Change(percent):
-                if i % 2 == 0:
-                    newBitList.append(i + 1)
-                else:
-                    newBitList.append(i - 1)
-            else:
-                newBitList.append(i)
-        return newBitList
-    elif ftype < 0:
-        newBitList = []
-        for i in bitList:
-            if Change(percent):
-                if i % 2 == 0:
-                    newBitList.append(i - 1)
-                else:
-                    newBitList.append(i + 1)
-            else:
-                newBitList.append(i)
-        return newBitList
-
-
-def Zrange(source, xindex, yindex):
-    bitList = []  # 一维列表， Z字排序之后的像素值
-    flag = True  # 表示Z字排序处于向右上方的趋势
-    i = j = 0
-    while i < 8 and j < 8:
-        bitList.append(source[xindex + i, yindex + j])
-        # bitList.append(source[xindex + i][yindex + j])
-        if flag:
-            i, j = i + 1, j - 1
-            if j < 0:
-                j = 0
-                flag = False
-            if i >= 8:
-                i = 7
-                j += 2
-                flag = False
-        else:
-            i, j = i - 1, j + 1
-            if i < 0:
-                i = 0
-                flag = True
-            if j >= 8:
-                j = 7
-                i += 2
-                flag = True
-    return bitList
-
-
-def RelationShip(bitList):
-    return sum([bitList[i + 1] - bitList[i] for i in range(len(bitList) - 1)])
-
-
-def RS(picture, bili):
-    im = Image.open(picture)
-    source = im.copy().load()  # 加载图片
-
-    width = im.size[0]
-    height = im.size[1]
-    new_width = width - width % 8
-    new_height = height - height % 8
-
-    RmNum = SmNum = R_mNum = S_mNum = 0
-    AllNum = 0
-    for i in range(0, new_width - 7, 8):
-        for j in range(0, new_height - 7, 8):
-            AllNum += 1
-            ZrangeList = Zrange(source, i, j)
-            origin_rs = RelationShip(ZrangeList)
-            FeiFu_rs = RelationShip(F(ZrangeList, 1, bili))
-            FeiZheng_rs = RelationShip(F(ZrangeList, -1, bili))
-            if FeiFu_rs > origin_rs:
-                RmNum += 1
-            elif FeiFu_rs < origin_rs:
-                SmNum += 1
-            if FeiZheng_rs > origin_rs:
-                R_mNum += 1
-            elif FeiZheng_rs < origin_rs:
-                S_mNum += 1
-    Rm, Sm, R_m, S_m = RmNum / AllNum, SmNum / AllNum, R_mNum / AllNum, S_mNum / AllNum
-    print(Rm, R_m, Sm, S_m)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        picture = "out.bmp"
-        RS(picture, 70)
-        # print("未指定信息载体图片。")
-    elif len(sys.argv) == 2:
-        picture = sys.argv[1]
-        RS(picture, 70)
-    else:
-        print("输入的参数过多。")
+xaxis = list(percentRange2)
+plt.plot(xaxis, Rm, 'b-', xaxis, R_m, 'b--', xaxis, Sm, 'g-', xaxis, S_m, 'g--')
+print("Rm蓝色实线，R-m蓝色虚线，Sm绿色实线，S-m绿色虚线")
+plt.axis([0, 100, 0, 1])
+plt.show()

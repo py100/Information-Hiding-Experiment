@@ -62,6 +62,7 @@ int main()
 	fillHuffData();
 	prepareDCT();
 	unsigned height, width;
+
 	int quality = 50;
 	unsigned long long sizeIn, sizeOut;
 	string bmp, jpg;
