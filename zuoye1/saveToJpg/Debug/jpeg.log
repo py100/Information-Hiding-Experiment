@@ -1,0 +1,11 @@
+﻿  main.cpp
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(31): warning C4244: “=”: 从“long”转换到“BYTE”，可能丢失数据
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(32): warning C4244: “=”: 从“long”转换到“WORD”，可能丢失数据
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(33): warning C4244: “=”: 从“long”转换到“BYTE”，可能丢失数据
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(34): warning C4244: “=”: 从“long”转换到“WORD”，可能丢失数据
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(54): warning C4244: “=”: 从“long”转换到“BYTE”，可能丢失数据
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(66): warning C4101: “sizeIn”: 未引用的局部变量
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(66): warning C4101: “sizeOut”: 未引用的局部变量
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(68): warning C4101: “data”: 未引用的局部变量
+c:\users\jevonsan\desktop\code\python\information-hiding-experiment\zuoye1\savetojpg\main.cpp(57): warning C4715: “fillHuffData”: 不是所有的控件路径都返回值
+  jpeg.vcxproj -> C:\Users\JevonsAn\Desktop\code\Python\Information-Hiding-Experiment\zuoye1\saveToJpg\Debug\jpeg.exe

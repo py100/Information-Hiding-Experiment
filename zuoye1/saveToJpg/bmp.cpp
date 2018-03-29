@@ -30,7 +30,7 @@ struct BMPInfoHeader
 
 bool checkBMP(BMPHeader& header, BMPInfoHeader& info)
 {
-	return header.bfType == 'MB';
+	return true;//header.bfType == 'MB';
 }
 
 RGB* openConvert(const char *fileName, unsigned& height, unsigned& width, unsigned long long& size)
@@ -39,7 +39,7 @@ RGB* openConvert(const char *fileName, unsigned& height, unsigned& width, unsign
 	if (fileName == nullptr)
 	{
 		cout << "Error: No input file name specified\n";
-		return false;
+		return nullptr;
 	}
 	ifstream in(fileName, ios::binary);
 	if (!in)
@@ -92,7 +92,7 @@ RGB* openConvert(const char *fileName, unsigned& height, unsigned& width, unsign
 	if (buffer == nullptr)
 	{
 		cout << "Error: Bad memory alloc\n";
-		return false;
+		return nullptr;
 	}
 	cout << "Done\n";
 	cout << "Converting to pure RGB...";
