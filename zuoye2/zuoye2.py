@@ -1,3 +1,6 @@
+#! python3
+#coding=utf8
+
 from PIL import Image
 import sys
 import random
